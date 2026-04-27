@@ -129,7 +129,7 @@ export const api = {
   deleteUser: (id: string) => request<any>('deleteUser', 'POST', { id }),
   
   login: (credentials: { User: string, Pass?: string }) => 
-    request<User>('login', 'GET', credentials),
+    request<User>('login', 'POST', credentials),
   
   changePassword: (username: string, oldPass: string, newPass: string) => 
     request<any>('changePassword', 'POST', { username, oldPass, newPass }),

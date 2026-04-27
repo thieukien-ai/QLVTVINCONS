@@ -9,11 +9,18 @@ const SPREADSHEET_ID = SpreadsheetApp.getActiveSpreadsheet().getId();
  * Xử lý yêu cầu GET (Truy vấn dữ liệu)
  */
 function doGet(e) {
-  const action = e.parameter.action;
+  // Lấy action và chuẩn hóa: cắt khoảng trắng, đưa về chữ thường
+  let action = e.parameter.action || (e.parameters && e.parameters.action ? e.parameters.action[0] : null);
+  if (action) action = action.trim();
+  
+  if (!action) {
+    return response({ error: 'Missing action parameter' });
+  }
   
   try {
     const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
     
+    // Sử dụng switch với action đã chuẩn hóa
     switch (action) {
       case 'login':
         return login(ss, e.parameter.User, e.parameter.Pass);
@@ -52,12 +59,31 @@ function doGet(e) {
  */
 function doPost(e) {
   try {
-    const params = JSON.parse(e.postData.contents);
-    const action = params.action;
-    const data = params.data;
+    let action = e.parameter.action;
+    let data = null;
+    
+    // Nếu action không có trong URL, thử tìm trong body JSON
+    if (e.postData && e.postData.contents) {
+      const params = JSON.parse(e.postData.contents);
+      if (!action) action = params.action;
+      data = params.data || params; // Một số request gửi thẳng data hoặc bọc trong data
+    }
+    
+    if (action) action = action.trim();
+
+    if (!action) {
+      return response({ error: 'Invalid action: missing' });
+    }
+
     const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
     
     switch (action) {
+      case 'login':
+        // Hỗ trợ login qua POST để bảo mật và ổn định trên Vercel
+        const user = data.User || e.parameter.User;
+        const pass = data.Pass || e.parameter.Pass;
+        return login(ss, user, pass);
+
       case 'saveOrder':
         return response(saveRow(ss, 'DonHangVatTu', data));
       
