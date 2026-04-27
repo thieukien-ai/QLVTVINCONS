@@ -1,0 +1,4 @@
+ID,DuAn,TenVatTu,MaVatTu,NhomVatTu,DonVi,SoLuong,NCC,NgayGuiPYC,NgayKyHD,NgayCanHang,ThoiGianChuan,NgayGiaoDuKien,NgayGiaoThucTe,TrangThai,Moc_T,Moc_T2,Moc_T7,Moc_T9,Moc_T10,Moc_T14,RuiRo,GhiChu,IsKhanCap
+DH001,VFHP,Van bi DN50,VT001,MEP,Cai,1,Meiji,01/03/2026,02/03/2026,05/04/2026,20 ngay,25/03/2026,26/03/2026,Dang giao,01/03,03/03,10/03,12/03,13/03,17/03,Vang,Can hang gap,TRUE
+DH002,VFHP,Ong HDPE D110,VT002,CTN,Met,50,Binh Minh,05/03/2026,06/03/2026,25/03/2026,10 ngay,18/03/2026,20/03/2026,Hoan thanh,05/03,07/03,14/03,16/03,17/03,21/03,Xanh,,FALSE
+DH003,VCP1,Kinh thuong 8mm,VT003,Nhom kinh,m2,30,Hai Long,10/03/2026,12/03/2026,05/04/2026,7 ngay,20/03/2026,,Cham,10/03,12/03,19/03,21/03,22/03,26/03,Do,NCC bao thieu,TRUE

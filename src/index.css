@@ -1,0 +1,48 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  
+  --color-slate-900: #0f172a;
+  --color-blue-500: #3b82f6;
+  --color-blue-600: #2563eb;
+}
+
+@layer components {
+  .bento-card {
+    @apply bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-all duration-300;
+  }
+  
+  .badge {
+    @apply px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider;
+  }
+  
+  .badge-urgent {
+    @apply bg-red-100 text-red-700 border border-red-200;
+  }
+  
+  .badge-normal {
+    @apply bg-slate-100 text-slate-600 border border-slate-200;
+  }
+
+  .risk-do { @apply text-red-500 font-bold; }
+  .risk-vang { @apply text-amber-500 font-bold; }
+  .risk-xanh { @apply text-emerald-500 font-bold; }
+
+  .stepper-dot {
+    @apply w-2.5 h-2.5 rounded-full bg-slate-200 relative shrink-0;
+  }
+  
+  .stepper-dot.active {
+    @apply bg-blue-500 ring-4 ring-blue-500/20;
+  }
+  
+  .stepper-line {
+    @apply flex-grow h-0.5 bg-slate-100 mx-1;
+  }
+}
+
+body {
+  @apply bg-slate-100 text-slate-900 antialiased font-sans;
+}
