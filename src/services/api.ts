@@ -7,7 +7,17 @@ const cache: { [key: string]: { data: any, timestamp: number } } = {};
 const CACHE_TTL = 15000; // 15 seconds
 
 async function request<T>(action: string, method: 'GET' | 'POST' = 'GET', data?: any): Promise<T> {
-  const url = new URL(API_URL);
+  if (!API_URL || API_URL === '') {
+    throw new Error('THIẾU CẤU HÌNH: Bạn chưa thiết lập VITE_API_URL trong Environment Variables trên Vercel.');
+  }
+
+  let url: URL;
+  try {
+    url = new URL(API_URL);
+  } catch (e) {
+    throw new Error('LỖI CẤU HÌNH: VITE_API_URL không phải là một URL hợp lệ.');
+  }
+  
   // Luôn thêm action vào URL để GAS dễ dàng nhận diện route (cả GET và POST)
   url.searchParams.append('action', action);
   // Thêm timestamp để ngăn chặn caching trên Vercel/CDN

@@ -15,7 +15,7 @@ export default function Categories() {
     undo, 
     commit, 
     refresh 
-  } = useTableData<Material>('getCategories', api.getCategories, api.saveCategory);
+  } = useTableData<Material>('getCategories', api.getCategories, api.saveCategory, 'MaVatTu');
 
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);

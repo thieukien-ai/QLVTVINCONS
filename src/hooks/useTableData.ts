@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '../services/api';
 
-export function useTableData<T extends { id?: string | number; ID?: string | number }>(
+export function useTableData<T extends Record<string, any>>(
   action: string,
   fetchFn: () => Promise<T[]>,
-  saveFn: (data: Partial<T>) => Promise<any>
+  saveFn: (data: Partial<T>) => Promise<any>,
+  idKey: string = 'ID'
 ) {
   const [data, setData] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,10 +36,11 @@ export function useTableData<T extends { id?: string | number; ID?: string | num
   }, [loadData]);
 
   // Ghi log thao tác vào cache (csv-like logs)
-  const logAction = (op: 'CREATE' | 'UPDATE' | 'DELETE', item: any) => {
+  const logAction = (op: 'CREATE' | 'UPDATE' | 'DELETE' | 'COMMIT', item: any) => {
     const logKey = `vincons_logs_${action}`;
     const timestamp = new Date().toISOString();
-    const logEntry = `${timestamp},${op},${item.ID || item.id || 'NEW'}\n`;
+    const itemId = item[idKey] || 'NEW';
+    const logEntry = `${timestamp},${op},${itemId}\n`;
     
     const existingLogs = localStorage.getItem(logKey) || 'timestamp,operation,item_id\n';
     localStorage.setItem(logKey, existingLogs + logEntry);
@@ -46,10 +48,10 @@ export function useTableData<T extends { id?: string | number; ID?: string | num
 
   // 2. Chỉnh sửa tạm thời trên Memory (Offline state)
   const updateOffline = (updatedItem: T) => {
-    logAction((updatedItem.ID || updatedItem.id) ? 'UPDATE' : 'CREATE', updatedItem);
+    logAction(updatedItem[idKey] ? 'UPDATE' : 'CREATE', updatedItem);
     setData(prev => {
-      const id = updatedItem.ID || updatedItem.id;
-      const idx = prev.findIndex(item => (item.ID || item.id) === id);
+      const id = updatedItem[idKey];
+      const idx = prev.findIndex(item => item[idKey] === id);
       if (idx > -1) {
         const next = [...prev];
         next[idx] = updatedItem;
