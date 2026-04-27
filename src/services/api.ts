@@ -7,22 +7,13 @@ const cache: { [key: string]: { data: any, timestamp: number } } = {};
 const CACHE_TTL = 15000; // 15 seconds
 
 async function request<T>(action: string, method: 'GET' | 'POST' = 'GET', data?: any): Promise<T> {
-  // Return cached data if available and fresh
-  if (method === 'GET' && cache[action] && (Date.now() - cache[action].timestamp < CACHE_TTL)) {
-    return cache[action].data;
-  }
-
-  if (!API_URL) {
-    throw new Error('THIẾU CẤU HÌNH: URL Backend (VITE_API_URL) chưa được thiết lập.');
-  }
-
   const url = new URL(API_URL);
   // Luôn thêm action vào URL để GAS dễ dàng nhận diện route (cả GET và POST)
   url.searchParams.append('action', action);
+  // Thêm timestamp để ngăn chặn caching trên Vercel/CDN
+  url.searchParams.append('_v', Date.now().toString());
   
   if (method === 'GET') {
-    url.searchParams.append('_t', Date.now().toString());
-    
     // Thêm các tham số từ object data vào URL searchParams
     if (data && typeof data === 'object') {
       Object.entries(data).forEach(([key, value]) => {
@@ -37,7 +28,6 @@ async function request<T>(action: string, method: 'GET' | 'POST' = 'GET', data?:
     method,
     mode: 'cors',
     redirect: 'follow',
-    cache: 'no-cache',
     headers: {
       'Accept': 'application/json',
     },
@@ -55,6 +45,7 @@ async function request<T>(action: string, method: 'GET' | 'POST' = 'GET', data?:
   }
 
   try {
+    // Không dùng cache: 'no-cache' trong options vì GAS redirect có thể lỗi với nó
     const response = await fetch(url.toString(), options);
     
     if (!response.ok) {

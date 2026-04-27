@@ -148,34 +148,48 @@ export default function Issues() {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setIsModalOpen(false)} />
           <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="relative bg-white w-full max-w-lg rounded-[3rem] shadow-2xl p-10">
             <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight mb-8">Báo cáo sự vụ</h2>
-            <form onSubmit={handleSave} className="space-y-5">
-              <div className="grid grid-cols-2 gap-5">
-                <div className="col-span-1 space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Dự án</label>
-                  <input type="text" value={editData.DuAn} onChange={e => setEditData({...editData, DuAn: e.target.value})} required className="form-input" />
+            <form onSubmit={handleSave} className="flex flex-col max-h-[85vh]">
+              <div className="flex-1 overflow-y-auto pr-2 space-y-4 scrollbar-thin">
+                <div className="grid grid-cols-3 items-center gap-4 py-2 border-b border-slate-50">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-tight">Dự án</label>
+                  <div className="col-span-2">
+                    <input type="text" value={editData.DuAn} onChange={e => setEditData({...editData, DuAn: e.target.value})} required className="form-input w-full" />
+                  </div>
                 </div>
-                <div className="col-span-1 space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Đối ứng xử lý</label>
-                  <input type="text" value={editData.NguoiPhuTrach} onChange={e => setEditData({...editData, NguoiPhuTrach: e.target.value})} required className="form-input" />
+
+                <div className="grid grid-cols-3 items-center gap-4 py-2 border-b border-slate-50">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-tight">Đối ứng xử lý</label>
+                  <div className="col-span-2">
+                    <input type="text" value={editData.NguoiPhuTrach} onChange={e => setEditData({...editData, NguoiPhuTrach: e.target.value})} required className="form-input w-full" />
+                  </div>
                 </div>
-                <div className="col-span-2 space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Loại sự việc / Vấn đề</label>
-                  <input type="text" value={editData.LoaiVuViec} onChange={e => setEditData({...editData, LoaiVuViec: e.target.value})} required className="form-input" />
+
+                <div className="grid grid-cols-3 items-center gap-4 py-2 border-b border-slate-50">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-tight">Loại sự việc</label>
+                  <div className="col-span-2">
+                    <input type="text" value={editData.LoaiVuViec} onChange={e => setEditData({...editData, LoaiVuViec: e.target.value})} required className="form-input w-full" />
+                  </div>
                 </div>
-                <div className="col-span-1 space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Phương án dự phòng</label>
-                  <select value={editData.PhuongAn} onChange={e => setEditData({...editData, PhuongAn: e.target.value})} className="form-input">
-                    <option value="PA1">Phương án 1 (Ưu tiên)</option>
-                    <option value="PA2">Phương án 2 (Dự phòng)</option>
-                  </select>
+
+                <div className="grid grid-cols-3 items-center gap-4 py-2 border-b border-slate-50">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-tight">Phương án</label>
+                  <div className="col-span-2">
+                    <select value={editData.PhuongAn} onChange={e => setEditData({...editData, PhuongAn: e.target.value})} className="form-input w-full">
+                      <option value="PA1">Phương án 1 (Ưu tiên)</option>
+                      <option value="PA2">Phương án 2 (Dự phòng)</option>
+                    </select>
+                  </div>
                 </div>
-                <div className="col-span-1 space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Hạn chót xử lý</label>
-                  <input type="date" value={editData.Deadline?.split('T')[0]} onChange={e => setEditData({...editData, Deadline: e.target.value})} required className="form-input" />
+
+                <div className="grid grid-cols-3 items-center gap-4 py-2 border-b border-slate-50">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-tight">Hạn chót</label>
+                  <div className="col-span-2">
+                    <input type="date" value={editData.Deadline?.split('T')[0]} onChange={e => setEditData({...editData, Deadline: e.target.value})} required className="form-input w-full" />
+                  </div>
                 </div>
               </div>
 
-              <div className="flex gap-4 pt-6">
+              <div className="flex gap-4 pt-8">
                 <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-4 bg-slate-50 text-slate-500 rounded-2xl font-black uppercase tracking-widest text-[10px]">Đóng</button>
                 <button type="submit" disabled={saving} className="flex-2 py-4 bg-slate-900 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2">
                    {saving ? '...' : <><Save size={16} /> Gửi báo cáo</>}

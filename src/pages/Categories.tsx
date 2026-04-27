@@ -154,35 +154,52 @@ export default function Categories() {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setIsModalOpen(false)} />
           <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="relative bg-white w-full max-w-lg rounded-[3rem] shadow-2xl p-10 overflow-hidden">
             <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight mb-8">Thông tin vật tư</h2>
-            <form onSubmit={handleSave} className="space-y-5">
-              <div className="grid grid-cols-2 gap-5">
-                <div className="col-span-1 space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Mã vật tư</label>
-                  <input type="text" value={editData.MaVatTu} onChange={e => setEditData({...editData, MaVatTu: e.target.value})} required className="form-input" />
+            <form onSubmit={handleSave} className="flex flex-col max-h-[85vh]">
+              <div className="flex-1 overflow-y-auto pr-2 space-y-4 scrollbar-thin">
+                <div className="grid grid-cols-3 items-center gap-4 py-2 border-b border-slate-50">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-tight">Mã vật tư</label>
+                  <div className="col-span-2">
+                    <input type="text" value={editData.MaVatTu} onChange={e => setEditData({...editData, MaVatTu: e.target.value})} required className="form-input w-full" />
+                  </div>
                 </div>
-                <div className="col-span-1 space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nhóm hàng</label>
-                  <input type="text" value={editData.NhomVatTu} onChange={e => setEditData({...editData, NhomVatTu: e.target.value})} required className="form-input" />
+
+                <div className="grid grid-cols-3 items-center gap-4 py-2 border-b border-slate-50">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-tight">Nhóm hàng</label>
+                  <div className="col-span-2">
+                    <input type="text" value={editData.NhomVatTu} onChange={e => setEditData({...editData, NhomVatTu: e.target.value})} required className="form-input w-full" />
+                  </div>
                 </div>
-                <div className="col-span-2 space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tên vật tư tiêu chuẩn</label>
-                  <input type="text" value={editData.TenVatTu} onChange={e => setEditData({...editData, TenVatTu: e.target.value})} required className="form-input" />
+
+                <div className="grid grid-cols-3 items-center gap-4 py-2 border-b border-slate-50">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-tight">Tên vật tư</label>
+                  <div className="col-span-2">
+                    <input type="text" value={editData.TenVatTu} onChange={e => setEditData({...editData, TenVatTu: e.target.value})} required className="form-input w-full" />
+                  </div>
                 </div>
-                <div className="col-span-1 space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Đơn vị tính</label>
-                  <input type="text" value={editData.DonVi} onChange={e => setEditData({...editData, DonVi: e.target.value})} required className="form-input" />
+
+                <div className="grid grid-cols-3 items-center gap-4 py-2 border-b border-slate-50">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-tight">Đơn vị tính</label>
+                  <div className="col-span-2">
+                    <input type="text" value={editData.DonVi} onChange={e => setEditData({...editData, DonVi: e.target.value})} required className="form-input w-full" />
+                  </div>
                 </div>
-                <div className="col-span-1 space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">TG cung ứng (Hàng TN)</label>
-                  <input type="text" value={editData.TG_ThongDung} onChange={e => setEditData({...editData, TG_ThongDung: e.target.value})} required className="form-input" />
+
+                <div className="grid grid-cols-3 items-center gap-4 py-2 border-b border-slate-50">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-tight">TG cung ứng</label>
+                  <div className="col-span-2">
+                    <input type="text" value={editData.TG_ThongDung} onChange={e => setEditData({...editData, TG_ThongDung: e.target.value})} required className="form-input w-full" />
+                  </div>
                 </div>
-                <div className="col-span-2 space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Ghi chú kỹ thuật</label>
-                  <input type="text" value={editData.TG_NhapKhau} onChange={e => setEditData({...editData, TG_NhapKhau: e.target.value})} placeholder="VD: Hàng nhập khẩu 45 ngày..." className="form-input" />
+
+                <div className="grid grid-cols-3 items-center gap-4 py-2 border-b border-slate-50">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-tight">Ghi chú</label>
+                  <div className="col-span-2">
+                    <input type="text" value={editData.TG_NhapKhau} onChange={e => setEditData({...editData, TG_NhapKhau: e.target.value})} placeholder="VD: Hàng nhập khẩu 45 ngày..." className="form-input w-full" />
+                  </div>
                 </div>
               </div>
 
-              <div className="flex gap-4 pt-6">
+              <div className="flex gap-4 pt-8">
                 <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-4 bg-slate-50 text-slate-500 rounded-2xl font-black uppercase tracking-widest text-[10px]">Đóng</button>
                 <button type="submit" disabled={saving} className="flex-2 py-4 bg-slate-900 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2">
                    {saving ? '...' : <><Save size={16} /> Lưu danh mục</>}

@@ -352,42 +352,52 @@ export default function Orders() {
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-10 space-y-8 scrollbar-thin">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Mã đơn hàng</label>
-                    <input 
-                      type="text" 
-                      value={editData.ID} 
-                      onChange={e => setEditData({...editData, ID: e.target.value})} 
-                      required 
-                      className="form-input" 
-                      placeholder="VD: DH-2024-001"
-                    />
+              <div className="flex-1 overflow-y-auto p-10 space-y-4 scrollbar-thin">
+                <div className="space-y-4">
+                  {/* Field Row: Title | Value */}
+                  <div className="grid grid-cols-3 items-center gap-4 py-2 border-b border-slate-50">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Mã đơn hàng</label>
+                    <div className="col-span-2">
+                      <input 
+                        type="text" 
+                        value={editData.ID} 
+                        onChange={e => setEditData({...editData, ID: e.target.value})} 
+                        required 
+                        className="form-input w-full" 
+                        placeholder="VD: DH-2024-001"
+                      />
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Dự án</label>
-                    <input 
-                      type="text" 
-                      value={editData.DuAn} 
-                      onChange={e => setEditData({...editData, DuAn: e.target.value})} 
-                      required 
-                      className="form-input"
-                    />
+
+                  <div className="grid grid-cols-3 items-center gap-4 py-2 border-b border-slate-50">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Dự án</label>
+                    <div className="col-span-2">
+                      <input 
+                        type="text" 
+                        value={editData.DuAn} 
+                        onChange={e => setEditData({...editData, DuAn: e.target.value})} 
+                        required 
+                        className="form-input w-full"
+                      />
+                    </div>
                   </div>
-                  <div className="col-span-2 space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tên vật tư</label>
-                    <input 
-                      type="text" 
-                      value={editData.TenVatTu} 
-                      onChange={e => setEditData({...editData, TenVatTu: e.target.value})} 
-                      required 
-                      className="form-input"
-                    />
+
+                  <div className="grid grid-cols-3 items-center gap-4 py-2 border-b border-slate-50">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tên vật tư</label>
+                    <div className="col-span-2">
+                      <input 
+                        type="text" 
+                        value={editData.TenVatTu} 
+                        onChange={e => setEditData({...editData, TenVatTu: e.target.value})} 
+                        required 
+                        className="form-input w-full"
+                      />
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Số lượng</label>
-                    <div className="flex gap-2">
+
+                  <div className="grid grid-cols-3 items-center gap-4 py-2 border-b border-slate-50">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Số lượng</label>
+                    <div className="col-span-2 flex gap-2">
                       <input 
                         type="number" 
                         value={editData.SoLuong} 
@@ -404,46 +414,56 @@ export default function Orders() {
                       />
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nhà cung cấp</label>
-                    <input 
-                      type="text" 
-                      value={editData.NCC} 
-                      onChange={e => setEditData({...editData, NCC: e.target.value})} 
-                      className="form-input"
-                    />
+
+                  <div className="grid grid-cols-3 items-center gap-4 py-2 border-b border-slate-50">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Nhà cung cấp</label>
+                    <div className="col-span-2">
+                      <input 
+                        type="text" 
+                        value={editData.NCC} 
+                        onChange={e => setEditData({...editData, NCC: e.target.value})} 
+                        className="form-input w-full"
+                      />
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Ngày cần hàng</label>
-                    <input 
-                      type="date" 
-                      value={editData.NgayCanHang?.split('T')[0]} 
-                      onChange={e => setEditData({...editData, NgayCanHang: e.target.value})} 
-                      required 
-                      className="form-input"
-                    />
+
+                  <div className="grid grid-cols-3 items-center gap-4 py-2 border-b border-slate-50">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Ngày cần hàng</label>
+                    <div className="col-span-2">
+                      <input 
+                        type="date" 
+                        value={editData.NgayCanHang?.split('T')[0]} 
+                        onChange={e => setEditData({...editData, NgayCanHang: e.target.value})} 
+                        required 
+                        className="form-input w-full"
+                      />
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Rủi ro ban đầu</label>
-                    <select 
-                      value={editData.RuiRo} 
-                      onChange={e => setEditData({...editData, RuiRo: e.target.value as any})} 
-                      className="form-input"
-                    >
-                      <option value="Xanh">Bình thường (Xanh)</option>
-                      <option value="Vang">Cảnh báo (Vàng)</option>
-                      <option value="Do">Nguy cấp (Đỏ)</option>
-                    </select>
+
+                  <div className="grid grid-cols-3 items-center gap-4 py-2 border-b border-slate-50">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Rủi ro ban đầu</label>
+                    <div className="col-span-2">
+                      <select 
+                        value={editData.RuiRo} 
+                        onChange={e => setEditData({...editData, RuiRo: e.target.value as any})} 
+                        className="form-input w-full"
+                      >
+                        <option value="Xanh">Bình thường (Xanh)</option>
+                        <option value="Vang">Cảnh báo (Vàng)</option>
+                        <option value="Do">Nguy cấp (Đỏ)</option>
+                      </select>
+                    </div>
                   </div>
-                  <div className="col-span-2 flex items-center gap-4 p-5 bg-red-50 rounded-2xl border border-red-100">
+
+                  <div className="flex items-center gap-4 p-5 bg-red-50 rounded-2xl border border-red-100 mt-4">
                     <input 
                       type="checkbox" 
                       id="isUrgent"
                       checked={editData.IsKhanCap} 
                       onChange={e => setEditData({...editData, IsKhanCap: e.target.checked})} 
-                      className="w-6 h-6 rounded-lg border-red-200 text-red-600 focus:ring-red-500"
+                      className="w-6 h-6 rounded-lg border-red-200 text-red-600 focus:ring-red-500 cursor-pointer"
                     />
-                    <label htmlFor="isUrgent" className="text-xs font-black text-red-700 uppercase tracking-tight">Đánh dấu đây là đơn hàng ƯU TIÊN KHẨN CẤP</label>
+                    <label htmlFor="isUrgent" className="text-xs font-black text-red-700 uppercase tracking-tight cursor-pointer">Đánh dấu đây là đơn hàng ƯU TIÊN KHẨN CẤP</label>
                   </div>
                 </div>
               </div>
