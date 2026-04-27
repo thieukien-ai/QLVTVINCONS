@@ -1,41 +1,92 @@
-import { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   Search, 
-  Filter, 
   Plus, 
   Download, 
   ChevronRight,
-  MoreVertical,
   Calendar,
-  AlertCircle,
   X,
   Clock,
-  CheckCircle2
+  CheckCircle2,
+  Trash2,
+  Edit2,
+  AlertCircle,
+  Package,
+  Save,
+  RotateCcw
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { api } from '../services/api';
 import { Order } from '../types';
 import { cn } from '../lib/utils';
+import ErrorState from '../components/ErrorState';
+import { useTableData } from '../hooks/useTableData';
 
 export default function Orders() {
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { 
+    data: orders, 
+    loading, 
+    isDirty, 
+    updateOffline, 
+    undo, 
+    commit, 
+    refresh 
+  } = useTableData<Order>('getOrders', api.getOrders, api.saveOrder);
+
+  const [error, setError] = useState<string | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editData, setEditData] = useState<Partial<Order>>({});
+  const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    fetchOrders();
-  }, []);
+  const handleOpenEdit = (order: Order | null) => {
+    if (order) {
+      setEditData(order);
+    } else {
+      setEditData({
+        ID: '',
+        DuAn: '',
+        TenVatTu: '',
+        MaVatTu: '',
+        SoLuong: 0,
+        DonVi: '',
+        NCC: '',
+        NgayCanHang: new Date().toISOString().split('T')[0],
+        IsKhanCap: false,
+        TrangThai: 'Chuan bi',
+        RuiRo: 'Xanh'
+      });
+    }
+    setIsModalOpen(true);
+  };
 
-  const fetchOrders = async () => {
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
     try {
-      setLoading(true);
-      const res = await api.getOrders();
-      setOrders(res);
-    } catch (err) {
-      console.error(err);
+      const result = await commit(editData as Order);
+      if (result.success) {
+        setIsModalOpen(false);
+      } else {
+        alert(result.error);
+      }
+    } catch (err: any) {
+      alert(err.message);
     } finally {
-      setLoading(false);
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm('Xác nhận xóa đơn hàng này?')) return;
+    try {
+      await api.deleteOrder(id);
+      if (selectedOrder?.ID === id) setSelectedOrder(null);
+      refresh();
+    } catch (err: any) {
+      alert(err.message);
     }
   };
 
@@ -63,19 +114,45 @@ export default function Orders() {
     o.DuAn.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  if (error) return <ErrorState message={error} onRetry={refresh} />;
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Theo dõi đơn hàng</h1>
-          <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Tiến độ cung ứng mốc T+14</p>
+        <div className="flex items-center gap-4">
+          <div>
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight">Quản lý đơn hàng</h1>
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Cập nhật & Chỉnh sửa trực tiếp</p>
+          </div>
+          {isDirty && (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="flex items-center gap-2 px-3 py-1 bg-amber-50 border border-amber-200 rounded-full text-[9px] font-black text-amber-700 uppercase tracking-tighter"
+            >
+              <AlertCircle size={10} />
+              Có thay đổi chưa lưu
+            </motion.div>
+          )}
         </div>
         <div className="flex items-center gap-3">
+          {isDirty && (
+            <button 
+              onClick={undo}
+              className="flex items-center gap-2 px-5 py-2.5 bg-white border border-amber-200 text-amber-600 rounded-2xl text-[11px] font-black uppercase tracking-widest hover:bg-amber-50 transition-all shadow-lg shadow-amber-500/5"
+            >
+              <RotateCcw size={16} />
+              Hoàn tác
+            </button>
+          )}
           <button className="flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 rounded-2xl text-[11px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 transition-all">
             <Download size={16} />
             Xuất Excel
           </button>
-          <button className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white rounded-2xl text-[11px] font-black uppercase tracking-widest hover:bg-slate-800 shadow-xl shadow-slate-900/20 transition-all">
+          <button 
+            onClick={() => handleOpenEdit(null)}
+            className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white rounded-2xl text-[11px] font-black uppercase tracking-widest hover:bg-slate-800 shadow-xl shadow-slate-900/20 transition-all"
+          >
             <Plus size={16} />
             Tạo đơn
           </button>
@@ -83,7 +160,6 @@ export default function Orders() {
       </div>
 
       <div className="bento-card p-0 overflow-hidden flex flex-col md:flex-row h-[750px] gap-0">
-        {/* Table Sidebar */}
         <div className={cn(
           "flex-1 flex flex-col min-w-0 transition-all duration-500",
           selectedOrder ? "md:w-1/2 lg:w-3/5" : "w-full"
@@ -102,26 +178,25 @@ export default function Orders() {
           </div>
 
           <div className="flex-1 overflow-y-auto">
-            <table className="w-full text-left text-xs border-separate border-spacing-y-2 px-4">
+            <table className="w-full text-left text-xs border-separate border-spacing-y-2 px-4 shadow-none">
               <thead className="bg-white text-slate-400 font-black uppercase tracking-widest text-[9px] sticky top-0 z-10">
                 <tr>
-                  <th className="px-4 py-3">Mã ĐH</th>
+                  <th className="px-4 py-3">Mã đơn</th>
                   <th className="px-4 py-3">Thông tin</th>
-                  <th className="px-4 py-3">Hạn</th>
-                  <th className="px-4 py-3">Tiến độ</th>
-                  <th className="px-4 py-3 text-center">Rủi ro</th>
+                  <th className="px-4 py-3">Hạn chót</th>
+                  <th className="px-4 py-3 text-center">Hành động</th>
                 </tr>
               </thead>
               <tbody className="text-slate-700">
                 {loading ? (
                   Array.from({ length: 5 }).map((_, idx) => (
                     <tr key={idx} className="animate-pulse">
-                      <td colSpan={5} className="px-4 py-4"><div className="h-12 bg-slate-50 rounded-2xl"></div></td>
+                      <td colSpan={4} className="px-4 py-4"><div className="h-12 bg-slate-50 rounded-2xl"></div></td>
                     </tr>
                   ))
-                ) : filteredOrders.map((order) => (
+                ) : filteredOrders.map((order, index) => (
                   <tr 
-                    key={order.ID} 
+                    key={`${order.ID}-${index}`} 
                     onClick={() => setSelectedOrder(order)}
                     className={cn(
                       "group cursor-pointer transition-all relative rounded-2xl",
@@ -129,22 +204,35 @@ export default function Orders() {
                     )}
                   >
                     <td className="px-4 py-4 first:rounded-l-2xl border-y border-transparent border-l">
-                      <span className="font-black text-slate-900 group-hover:text-blue-600 transition-colors">{order.ID}</span>
+                      <div className="flex items-center gap-2">
+                        <div className={cn("w-2 h-2 rounded-full", getRiskColor(order.RuiRo))}></div>
+                        <span className="font-black text-slate-900 group-hover:text-blue-600 transition-colors uppercase">{order.ID}</span>
+                      </div>
                     </td>
                     <td className="px-4 py-4 border-y border-transparent">
                       <div>
-                        <p className="font-extrabold text-slate-800 leading-none mb-1">{order.TenVatTu}</p>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">{order.DuAn}</p>
+                        <p className="font-extrabold text-slate-800 leading-none mb-1 line-clamp-1">{order.TenVatTu}</p>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight truncate">{order.DuAn}</p>
                       </div>
                     </td>
-                    <td className="px-4 py-4 border-y border-transparent font-bold text-slate-500">{new Date(order.NgayCanHang).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}</td>
-                    <td className="px-4 py-4 border-y border-transparent">
-                       <span className={cn("px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border", getStatusStyle(order.TrangThai))}>
-                        {order.TrangThai}
-                      </span>
+                    <td className="px-4 py-4 border-y border-transparent font-bold text-slate-500">
+                      {new Date(order.NgayCanHang).toLocaleDateString('vi-VN')}
                     </td>
                     <td className="px-4 py-4 last:rounded-r-2xl border-y border-transparent border-r text-center">
-                       <div className={cn("w-2.5 h-2.5 rounded-full mx-auto", getRiskColor(order.RuiRo))}></div>
+                       <div className="flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                         <button 
+                           onClick={(e) => { e.stopPropagation(); handleOpenEdit(order); }}
+                           className="p-1.5 hover:bg-white rounded-lg text-slate-400 hover:text-blue-600 transition-all border border-transparent hover:border-blue-100"
+                         >
+                           <Edit2 size={13} />
+                         </button>
+                         <button 
+                           onClick={(e) => handleDelete(order.ID, e)}
+                           className="p-1.5 hover:bg-white rounded-lg text-slate-400 hover:text-red-600 transition-all border border-transparent hover:border-red-100"
+                         >
+                           <Trash2 size={13} />
+                         </button>
+                       </div>
                     </td>
                   </tr>
                 ))}
@@ -153,7 +241,6 @@ export default function Orders() {
           </div>
         </div>
 
-        {/* Detail Panel */}
         <AnimatePresence>
           {selectedOrder && (
             <motion.div 
@@ -161,17 +248,11 @@ export default function Orders() {
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: '100%', opacity: 1 }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className={cn(
-                "fixed inset-0 z-50 bg-white flex flex-col md:relative md:inset-auto md:z-auto md:w-1/2 lg:w-2/5 md:border-l border-slate-100 overflow-hidden",
-                "h-full"
-              )}
+              className="fixed inset-0 z-50 bg-white flex flex-col md:relative md:inset-auto md:z-auto md:w-1/2 lg:w-2/5 md:border-l border-slate-100 overflow-hidden h-full shadow-2xl md:shadow-none"
             >
               <div className="p-4 sm:p-6 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white/80 backdrop-blur-md z-10">
                 <div className="flex items-center gap-3">
-                  <button 
-                    onClick={() => setSelectedOrder(null)}
-                    className="md:hidden p-2 hover:bg-slate-100 rounded-xl text-slate-400 mr-1"
-                  >
+                  <button onClick={() => setSelectedOrder(null)} className="md:hidden p-2 hover:bg-slate-100 rounded-xl text-slate-400 mr-1">
                     <ChevronRight className="rotate-180" size={20} />
                   </button>
                   <div>
@@ -179,10 +260,7 @@ export default function Orders() {
                     <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest truncate max-w-[200px]">{selectedOrder.TenVatTu}</p>
                   </div>
                 </div>
-                <button 
-                  onClick={() => setSelectedOrder(null)}
-                  className="hidden md:flex p-2.5 hover:bg-slate-100 rounded-2xl text-slate-400 transition-all hover:rotate-90"
-                >
+                <button onClick={() => setSelectedOrder(null)} className="flex p-2.5 hover:bg-slate-100 rounded-2xl text-slate-400 transition-all">
                   <X size={20} />
                 </button>
               </div>
@@ -209,7 +287,6 @@ export default function Orders() {
                    </div>
                 </div>
 
-                {/* Timeline Stepper */}
                 <div className="space-y-5 sm:space-y-6 px-1 sm:px-2">
                   <h3 className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
                     <Clock size={14} className="text-blue-500" /> Tiến độ mốc thời gian T+14
@@ -219,11 +296,10 @@ export default function Orders() {
                       { label: 'Gửi PYC (T)', date: selectedOrder.Moc_T, status: 'complete' },
                       { label: 'Ký HĐ (T2)', date: selectedOrder.Moc_T2, status: 'complete' },
                       { label: 'Lệnh sản xuất (T7)', date: selectedOrder.Moc_T7, status: 'current' },
-                      { label: 'Kiểm kho (T9)', date: selectedOrder.Moc_T9, status: 'pending' },
                       { label: 'Đóng gói (T10)', date: selectedOrder.Moc_T10, status: 'pending' },
                       { label: 'Bàn giao (T14)', date: selectedOrder.Moc_T14, status: 'pending' },
-                    ].map((step, i) => (
-                      <div key={i} className="flex items-start gap-4 sm:gap-5 relative pl-8 group">
+                    ].map((step) => (
+                      <div key={step.label} className="flex items-start gap-4 sm:gap-5 relative pl-8 group">
                         <div className={cn(
                           "absolute left-0 w-[24px] h-[24px] rounded-full border-2 bg-white flex items-center justify-center transition-all z-10",
                           step.status === 'complete' ? "border-emerald-500 bg-emerald-500 text-white" : 
@@ -246,35 +322,152 @@ export default function Orders() {
                     ))}
                   </div>
                 </div>
-
-                {/* Deadlines Card */}
-                <div className="p-5 sm:p-6 bg-slate-900 rounded-2xl sm:rounded-3xl text-white shadow-2xl shadow-slate-900/30 mb-20 md:mb-0">
-                   <div className="flex justify-between items-start mb-5 sm:mb-6">
-                      <div className="p-2 bg-white/10 rounded-xl">
-                        <Calendar size={18} className="text-blue-400" />
-                      </div>
-                      <div className="text-right">
-                        <p className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest text-slate-500">Hạn chót công trường</p>
-                        <p className="text-base sm:text-xl font-black text-blue-400 tracking-tight">{new Date(selectedOrder.NgayCanHang).toLocaleDateString('vi-VN')}</p>
-                      </div>
-                   </div>
-                   <div className="space-y-3 sm:space-y-4">
-                      <p className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest text-slate-500">Ghi chú vận hành</p>
-                      <div className="p-3 sm:p-4 bg-white/5 border border-white/10 rounded-xl sm:rounded-2xl italic text-[11px] sm:text-xs leading-relaxed opacity-90">
-                        "{selectedOrder.GhiChu || 'Hệ thống chưa nhận được ghi chú bổ sung cho đơn hàng này.'}"
-                      </div>
-                   </div>
-                </div>
-
-                <div className="md:pt-4 flex items-center gap-2 sm:gap-3 sticky bottom-[-24px] bg-white/100 backdrop-blur-md pb-6 pt-4 border-t border-slate-100 z-10 px-2 sm:px-0">
-                   <button className="flex-1 py-3 sm:py-4 px-2 bg-white border border-slate-200 rounded-xl sm:rounded-2xl text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 transition-all">Lịch sử</button>
-                   <button className="flex-1 py-3 sm:py-4 px-2 bg-blue-600 text-white rounded-xl sm:rounded-2xl text-[9px] sm:text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 shadow-xl shadow-blue-600/20 transition-all">Cập nhật ngay</button>
-                </div>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
+
+      {isModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" 
+            onClick={() => setIsModalOpen(false)} 
+          />
+          <motion.div 
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="relative bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl overflow-hidden"
+          >
+            <form onSubmit={handleSave} className="flex flex-col max-h-[90vh]">
+              <div className="p-8 border-b border-slate-50 flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight">{editData.ID ? 'Cập nhật đơn hàng' : 'Tạo đơn mới'}</h2>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Thông tin sẽ được đồng bộ vào Google Sheets</p>
+                </div>
+                <button type="button" onClick={() => setIsModalOpen(false)} className="p-3 hover:bg-slate-100 rounded-2xl transition-all">
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-10 space-y-8 scrollbar-thin">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Mã đơn hàng</label>
+                    <input 
+                      type="text" 
+                      value={editData.ID} 
+                      onChange={e => setEditData({...editData, ID: e.target.value})} 
+                      required 
+                      className="form-input" 
+                      placeholder="VD: DH-2024-001"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Dự án</label>
+                    <input 
+                      type="text" 
+                      value={editData.DuAn} 
+                      onChange={e => setEditData({...editData, DuAn: e.target.value})} 
+                      required 
+                      className="form-input"
+                    />
+                  </div>
+                  <div className="col-span-2 space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tên vật tư</label>
+                    <input 
+                      type="text" 
+                      value={editData.TenVatTu} 
+                      onChange={e => setEditData({...editData, TenVatTu: e.target.value})} 
+                      required 
+                      className="form-input"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Số lượng</label>
+                    <div className="flex gap-2">
+                      <input 
+                        type="number" 
+                        value={editData.SoLuong} 
+                        onChange={e => setEditData({...editData, SoLuong: Number(e.target.value)})} 
+                        required 
+                        className="form-input flex-1"
+                      />
+                      <input 
+                        type="text" 
+                        value={editData.DonVi} 
+                        onChange={e => setEditData({...editData, DonVi: e.target.value})} 
+                        placeholder="ĐVT" 
+                        className="form-input w-24"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nhà cung cấp</label>
+                    <input 
+                      type="text" 
+                      value={editData.NCC} 
+                      onChange={e => setEditData({...editData, NCC: e.target.value})} 
+                      className="form-input"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Ngày cần hàng</label>
+                    <input 
+                      type="date" 
+                      value={editData.NgayCanHang?.split('T')[0]} 
+                      onChange={e => setEditData({...editData, NgayCanHang: e.target.value})} 
+                      required 
+                      className="form-input"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Rủi ro ban đầu</label>
+                    <select 
+                      value={editData.RuiRo} 
+                      onChange={e => setEditData({...editData, RuiRo: e.target.value as any})} 
+                      className="form-input"
+                    >
+                      <option value="Xanh">Bình thường (Xanh)</option>
+                      <option value="Vang">Cảnh báo (Vàng)</option>
+                      <option value="Do">Nguy cấp (Đỏ)</option>
+                    </select>
+                  </div>
+                  <div className="col-span-2 flex items-center gap-4 p-5 bg-red-50 rounded-2xl border border-red-100">
+                    <input 
+                      type="checkbox" 
+                      id="isUrgent"
+                      checked={editData.IsKhanCap} 
+                      onChange={e => setEditData({...editData, IsKhanCap: e.target.checked})} 
+                      className="w-6 h-6 rounded-lg border-red-200 text-red-600 focus:ring-red-500"
+                    />
+                    <label htmlFor="isUrgent" className="text-xs font-black text-red-700 uppercase tracking-tight">Đánh dấu đây là đơn hàng ƯU TIÊN KHẨN CẤP</label>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-8 border-t border-slate-50 bg-slate-50/50 flex gap-4">
+                <button 
+                  type="button" 
+                  onClick={() => setIsModalOpen(false)}
+                  className="flex-1 py-5 bg-white text-slate-500 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-slate-100 transition-all border border-slate-100"
+                >
+                  Hủy bỏ
+                </button>
+                <button 
+                  type="submit" 
+                  disabled={saving}
+                  className="flex-3 py-5 bg-slate-900 text-white rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-slate-800 transition-all shadow-2xl shadow-slate-900/30 flex items-center justify-center gap-3"
+                >
+                  {saving ? <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div> : <><Save size={18} /> Lưu dữ liệu</>}
+                </button>
+              </div>
+            </form>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }

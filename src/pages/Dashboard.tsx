@@ -34,15 +34,28 @@ const mockChartData = [
   { name: 'CN', value: 349 },
 ];
 
+import ErrorState from '../components/ErrorState';
+
 export default function Dashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await api.getDashboard();
+      setData(res);
+    } catch (err: any) {
+      setError(err.message || 'Lỗi không xác định khi tải Dashboard');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    api.getDashboard()
-      .then(res => setData(res))
-      .catch(err => console.error(err))
-      .finally(() => setLoading(false));
+    fetchData();
   }, []);
 
   if (loading) return (
@@ -51,6 +64,8 @@ export default function Dashboard() {
       Đang tải dữ liệu bento...
     </div>
   );
+
+  if (error) return <ErrorState message={error} onRetry={fetchData} />;
 
   const kpis = [
     { title: 'Tổng đơn hàng', value: data?.kpis.totalOrders || 0, icon: '📦', color: 'blue', change: '↑ 12%' },
@@ -63,8 +78,8 @@ export default function Dashboard() {
     <div className="grid grid-cols-1 md:grid-cols-12 auto-rows-[minmax(120px,auto)] gap-4 lg:gap-6 pb-8">
       {/* KPI Section - 2 columns on small screens, 4 on medium+ */}
       <div className="col-span-1 md:col-span-12 grid grid-cols-2 md:grid-cols-4 gap-4">
-        {kpis.map((kpi, idx) => (
-          <div key={idx} className={cn(
+        {kpis.map((kpi) => (
+          <div key={kpi.title} className={cn(
             "bento-card flex flex-col justify-between p-4 min-h-[140px]",
             kpi.color === 'red' && "border-l-4 border-l-red-500"
           )}>
@@ -113,8 +128,8 @@ export default function Dashboard() {
               </tr>
             </thead>
             <tbody className="text-slate-700">
-              {data?.topRisks.map((order) => (
-                <tr key={order.ID} className="group hover:bg-slate-50 transition-all rounded-xl">
+              {data?.topRisks.map((order, index) => (
+                <tr key={`${order.ID}-${index}`} className="group hover:bg-slate-50 transition-all rounded-xl">
                   <td className="px-4 py-3 first:rounded-l-xl border-y border-transparent border-l font-bold text-slate-900">{order.ID}</td>
                   <td className="px-4 py-3 border-y border-transparent font-medium">{order.DuAn}</td>
                   <td className="px-4 py-3 border-y border-transparent">
@@ -152,8 +167,8 @@ export default function Dashboard() {
       <div className="bento-card col-span-1 md:col-span-4 row-span-4 flex flex-col">
         <h3 className="font-extrabold text-slate-800 mb-6 tracking-tight text-lg">Sự vụ tối ưu mới</h3>
         <div className="space-y-4 flex-grow overflow-y-auto pr-1">
-          {data?.latestIssues.map((issue) => (
-            <div key={issue.ID} className="p-4 border border-slate-100 rounded-2xl bg-slate-50/50 hover:bg-white hover:border-slate-200 transition-all group">
+          {data?.latestIssues.map((issue, index) => (
+            <div key={`${issue.ID}-${index}`} className="p-4 border border-slate-100 rounded-2xl bg-slate-50/50 hover:bg-white hover:border-slate-200 transition-all group">
               <div className="flex justify-between items-center mb-3">
                 <span className="text-[9px] font-black text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg uppercase tracking-widest">{issue.ID} - {issue.DuAn}</span>
                 <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">Hạn: {new Date(issue.Deadline).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}</span>

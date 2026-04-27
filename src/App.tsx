@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   Package, 
@@ -8,20 +8,28 @@ import {
   Menu, 
   X,
   ClipboardList,
-  Bell
+  Bell,
+  Users,
+  LogOut,
+  ChevronDown
 } from 'lucide-react';
 import { useState, useEffect, ReactNode } from 'react';
 import { cn } from './lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Dashboard from './pages/Dashboard';
 import Orders from './pages/Orders';
 import Projects from './pages/Projects';
 import Categories from './pages/Categories';
 import Issues from './pages/Issues';
 import SettingsPage from './pages/Settings';
+import LoginPage from './pages/LoginPage';
+import UserManagement from './pages/UserManagement';
 
 function Layout({ children }: { children: ReactNode }) {
   const location = useLocation();
+  const { user, logout } = useAuth();
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
   const navItems = [
     { name: 'Dashboard', path: '/', icon: LayoutDashboard },
@@ -29,8 +37,9 @@ function Layout({ children }: { children: ReactNode }) {
     { name: 'Dự án', path: '/projects', icon: Briefcase },
     { name: 'Vật tư', path: '/categories', icon: ClipboardList },
     { name: 'Tối ưu', path: '/issues', icon: AlertTriangle },
+    { name: 'Người dùng', path: '/users', icon: Users, hide: user?.Role !== 'SA' },
     { name: 'Cài đặt', path: '/settings', icon: Settings },
-  ];
+  ].filter(item => !item.hide);
 
   return (
     <div className="flex flex-col h-screen bg-slate-50 font-sans text-slate-900 overflow-hidden">
@@ -61,12 +70,42 @@ function Layout({ children }: { children: ReactNode }) {
 
             <div className="h-8 w-px bg-slate-800 mx-1"></div>
 
-            <div className="flex items-center gap-2 pl-1">
-              <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-black text-slate-400 uppercase text-[10px]">SA</div>
-              <div className="hidden md:block">
-                <p className="text-[11px] font-black leading-none">Văn Admin</p>
-                <p className="text-[9px] text-slate-500 font-bold uppercase mt-0.5 tracking-tighter">Super Admin</p>
-              </div>
+            <div className="relative">
+              <button 
+                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                className="flex items-center gap-2 pl-1 p-1 hover:bg-white/5 rounded-xl transition-all"
+              >
+                <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-black text-slate-400 uppercase text-[10px]">
+                  {user?.HoTen.charAt(0) || 'U'}
+                </div>
+                <div className="hidden md:block text-left mr-1">
+                  <p className="text-[11px] font-black leading-none">{user?.HoTen.split(' ').pop()}</p>
+                  <p className="text-[9px] text-slate-500 font-bold uppercase mt-0.5 tracking-tighter">{user?.Role}</p>
+                </div>
+                <ChevronDown size={14} className={cn("text-slate-500 transition-transform", isUserMenuOpen && "rotate-180")} />
+              </button>
+
+              <AnimatePresence>
+                {isUserMenuOpen && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden py-1 z-50 text-slate-700"
+                  >
+                    <div className="px-4 py-3 border-b border-slate-50">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Tài khoản</p>
+                      <p className="text-xs font-bold truncate">{user?.Email}</p>
+                    </div>
+                    <button 
+                      onClick={() => { setIsUserMenuOpen(false); logout(); }}
+                      className="w-full flex items-center gap-2 px-4 py-3 hover:bg-slate-50 text-sm font-bold text-red-500 transition-colors"
+                    >
+                      <LogOut size={16} /> Đăng xuất
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         </div>
@@ -123,19 +162,38 @@ function Layout({ children }: { children: ReactNode }) {
   );
 }
 
+function AppContent() {
+  const { user, isLoading } = useAuth();
+
+  if (isLoading) return (
+    <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+       <div className="w-10 h-10 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin"></div>
+    </div>
+  );
+
+  if (!user) return <LoginPage />;
+
+  return (
+    <Layout>
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/orders" element={<Orders />} />
+        <Route path="/projects" element={<Projects />} />
+        <Route path="/categories" element={<Categories />} />
+        <Route path="/issues" element={<Issues />} />
+        <Route path="/users" element={user.Role === 'SA' ? <UserManagement /> : <Navigate to="/" />} />
+        <Route path="/settings" element={<SettingsPage />} />
+      </Routes>
+    </Layout>
+  );
+}
+
 export default function App() {
   return (
     <Router>
-      <Layout>
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/orders" element={<Orders />} />
-          <Route path="/projects" element={<Projects />} />
-          <Route path="/categories" element={<Categories />} />
-          <Route path="/issues" element={<Issues />} />
-          <Route path="/settings" element={<SettingsPage />} />
-        </Routes>
-      </Layout>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
     </Router>
   );
 }

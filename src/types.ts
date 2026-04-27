@@ -1,9 +1,13 @@
-export type Role = 'SA' | 'QLVT' | 'NHAN_VIEN';
+export type Role = 'SA' | 'QLVT' | 'BQLXD' | 'KTXD' | 'PCU' | 'NHAN_VIEN';
 
 export interface User {
+  ID: string;
+  Username: string;
   Email: string;
   HoTen: string;
   Role: Role;
+  Password?: string;
+  IsActive: boolean;
 }
 
 export interface Permission {
